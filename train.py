@@ -241,6 +241,3 @@ if __name__ == '__main__':
     # Start Flask server in a separate thread
     server_thread = threading.Thread(target=start_server)
     server_thread.start()
-
-    # Remove this line since we're not using it anymore
-    # train_model()  # This was causing the error
