@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fashion MNIST Training Progress</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div style="width: 800px; margin: 0 auto;">
+        <h1>Training Progress</h1>
+        <canvas id="metricsChart"></canvas>
+        <div id="status">Status: Initializing...</div>
+        <div id="predictions" style="margin-top: 20px;">
+            <h2>Model Predictions</h2>
+            <img id="predictionGrid" style="display: none; max-width: 100%;">
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('metricsChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Training Loss',
+                    data: [],
+                    borderColor: 'rgb(75, 192, 192)',
+                    tension: 0.1
+                },
+                {
+                    label: 'Training Accuracy',
+                    data: [],
+                    borderColor: 'rgb(255, 99, 132)',
+                    tension: 0.1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        function updateChart() {
+            fetch('/get_metrics')
+                .then(response => response.json())
+                .then(data => {
+                    chart.data.labels = data.epochs;
+                    chart.data.datasets[0].data = data.losses;
+                    chart.data.datasets[1].data = data.accuracies;
+                    chart.update();
+                    document.getElementById('status').textContent = 'Status: ' + data.status;
+                    
+                    if (data.status === 'Training Complete' && data.prediction_image) {
+                        document.getElementById('predictionGrid').src = 'data:image/png;base64,' + data.prediction_image;
+                        document.getElementById('predictionGrid').style.display = 'block';
+                    }
+                    
+                    if (data.status !== 'Training Complete') {
+                        setTimeout(updateChart, 1000);
+                    }
+                });
+        }
+
+        updateChart();
+    </script>
+</body>
+</html> 
