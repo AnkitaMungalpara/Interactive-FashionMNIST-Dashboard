@@ -51,8 +51,10 @@ fashion_mnist_live/
 ├── train.py
 ├── model.py
 ├── templates/
-    └── index.html
-
+│   └── index.html
+└── static/
+    └── js/
+        └── chart.js
 ```
 
 ## Result

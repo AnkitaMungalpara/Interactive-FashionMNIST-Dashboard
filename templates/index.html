@@ -1,71 +1,345 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Fashion MNIST Training Progress</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Fashion MNIST Model Comparison</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .models-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .model-config {
+            flex: 1;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: inline-block;
+            width: 120px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 150px;
+        }
+        .charts {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        .chart {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        .predictions {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+        .prediction-image {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 20px 0;
+            width: 200px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+        }
+        .model-header {
+            background-color: #2196F3;
+            color: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .parameter-hint {
+            font-size: 12px;
+            color: #666;
+            margin-left: 120px;
+            margin-top: 2px;
+        }
+        .controls {
+            text-align: center;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+    </style>
 </head>
 <body>
-    <div style="width: 800px; margin: 0 auto;">
-        <h1>Training Progress</h1>
-        <canvas id="metricsChart"></canvas>
-        <div id="status">Status: Initializing...</div>
-        <div id="predictions" style="margin-top: 20px;">
-            <h2>Model Predictions</h2>
-            <img id="predictionGrid" style="display: none; max-width: 100%;">
+    <div class="container">
+        <h1>Fashion MNIST Model Comparison</h1>
+        
+        <div class="models-container">
+            <!-- Model 1 -->
+            <div class="model-config">
+                <div class="model-header">
+                    <h2>Model 1 Configuration</h2>
+                </div>
+                <div class="form-group">
+                    <label for="model1_layers">Layer Sizes:</label>
+                    <input type="text" id="model1_layers" value="512,256,128">
+                    <div class="parameter-hint">e.g., 512,256,128</div>
+                </div>
+                <div class="form-group">
+                    <label for="model1_optimizer">Optimizer:</label>
+                    <select id="model1_optimizer">
+                        <option value="Adam">Adam</option>
+                        <option value="SGD">SGD</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="model1_batch_size">Batch Size:</label>
+                    <input type="number" id="model1_batch_size" value="64" min="1">
+                    <div class="parameter-hint">Range: 32-128</div>
+                </div>
+                <div class="form-group">
+                    <label for="model1_epochs">Epochs:</label>
+                    <input type="number" id="model1_epochs" value="10" min="1">
+                    <div class="parameter-hint">Range: 5-50</div>
+                </div>
+                <div class="form-group">
+                    <label for="model1_lr">Learning Rate:</label>
+                    <input type="number" id="model1_lr" value="0.001" step="0.0001">
+                    <div class="parameter-hint">Range: 0.0001-0.01</div>
+                </div>
+            </div>
+
+            <!-- Model 2 -->
+            <div class="model-config">
+                <div class="model-header">
+                    <h2>Model 2 Configuration</h2>
+                </div>
+                <div class="form-group">
+                    <label for="model2_layers">Layer Sizes:</label>
+                    <input type="text" id="model2_layers" value="64,32,16">
+                    <div class="parameter-hint">e.g., 64,32,16</div>
+                </div>
+                <div class="form-group">
+                    <label for="model2_optimizer">Optimizer:</label>
+                    <select id="model2_optimizer">
+                        <option value="Adam">Adam</option>
+                        <option value="SGD">SGD</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="model2_batch_size">Batch Size:</label>
+                    <input type="number" id="model2_batch_size" value="32" min="1">
+                    <div class="parameter-hint">Range: 32-128</div>
+                </div>
+                <div class="form-group">
+                    <label for="model2_epochs">Epochs:</label>
+                    <input type="number" id="model2_epochs" value="10" min="1">
+                    <div class="parameter-hint">Range: 5-50</div>
+                </div>
+                <div class="form-group">
+                    <label for="model2_lr">Learning Rate:</label>
+                    <input type="number" id="model2_lr" value="0.001" step="0.0001">
+                    <div class="parameter-hint">Range: 0.0001-0.01</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button onclick="trainModels()">Train Models</button>
+            <div id="status">Status: Ready</div>
+        </div>
+
+        <div class="charts">
+            <div id="loss_chart" class="chart"></div>
+            <div id="accuracy_chart" class="chart"></div>
+        </div>
+
+        <div class="predictions">
+            <div id="prediction1" class="prediction-image"></div>
+            <div id="prediction2" class="prediction-image"></div>
         </div>
     </div>
 
     <script>
-        const ctx = document.getElementById('metricsChart').getContext('2d');
-        const chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: [],
-                datasets: [{
-                    label: 'Training Loss',
-                    data: [],
-                    borderColor: 'rgb(75, 192, 192)',
-                    tension: 0.1
-                },
-                {
-                    label: 'Training Accuracy',
-                    data: [],
-                    borderColor: 'rgb(255, 99, 132)',
-                    tension: 0.1
-                }]
+        let intervalId = null;
+        const colors = {
+            model0: {
+                loss: '#1f77b4',
+                accuracy: '#2ca02c'
             },
-            options: {
-                responsive: true,
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
+            model1: {
+                loss: '#ff7f0e',
+                accuracy: '#d62728'
             }
-        });
+        };
 
-        function updateChart() {
-            fetch('/get_metrics')
-                .then(response => response.json())
-                .then(data => {
-                    chart.data.labels = data.epochs;
-                    chart.data.datasets[0].data = data.losses;
-                    chart.data.datasets[1].data = data.accuracies;
-                    chart.update();
-                    document.getElementById('status').textContent = 'Status: ' + data.status;
-                    
-                    if (data.status === 'Training Complete' && data.prediction_image) {
-                        document.getElementById('predictionGrid').src = 'data:image/png;base64,' + data.prediction_image;
-                        document.getElementById('predictionGrid').style.display = 'block';
-                    }
-                    
-                    if (data.status !== 'Training Complete') {
-                        setTimeout(updateChart, 1000);
-                    }
-                });
+        function resetUI() {
+            // Clear plots
+            Plotly.newPlot('loss_chart', [], {
+                title: 'Training Loss',
+                xaxis: { title: 'Epoch' },
+                yaxis: { title: 'Loss' },
+                showlegend: true
+            });
+            
+            Plotly.newPlot('accuracy_chart', [], {
+                title: 'Training Accuracy',
+                xaxis: { title: 'Epoch' },
+                yaxis: { title: 'Accuracy', range: [0, 1] },
+                showlegend: true
+            });
+
+            // Clear prediction images
+            $('#prediction1').empty();
+            $('#prediction2').empty();
+
+            // Reset status
+            $('#status').text('Status: Initializing...');
         }
 
-        updateChart();
+        function trainModels() {
+            // Reset everything
+            resetUI();
+
+            const config = {
+                model1_layers: $('#model1_layers').val().split(',').map(x => parseInt(x.trim())),
+                model1_optimizer: $('#model1_optimizer').val(),
+                model1_batch_size: $('#model1_batch_size').val(),
+                model1_epochs: $('#model1_epochs').val(),
+                model1_lr: $('#model1_lr').val(),
+                model2_layers: $('#model2_layers').val().split(',').map(x => parseInt(x.trim())),
+                model2_optimizer: $('#model2_optimizer').val(),
+                model2_batch_size: $('#model2_batch_size').val(),
+                model2_epochs: $('#model2_epochs').val(),
+                model2_lr: $('#model2_lr').val(),
+            };
+
+            // Disable the train button
+            $('button').prop('disabled', true);
+            
+            // Clear any existing interval
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+            
+            $.ajax({
+                url: '/train_models',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(config),
+                success: function(response) {
+                    intervalId = setInterval(updateMetrics, 100);  // Poll every 100ms
+                },
+                error: function(error) {
+                    $('#status').text('Status: Error starting training');
+                    $('button').prop('disabled', false);
+                }
+            });
+        }
+
+        function updateMetrics() {
+            $.get('/get_metrics', function(data) {
+                $('#status').text('Status: ' + data.status);
+
+                const models = Object.keys(data.models_metrics);
+                if (models.length === 0) return;
+
+                // Prepare traces for both plots
+                const lossTraces = [];
+                const accuracyTraces = [];
+
+                models.forEach((model_id, index) => {
+                    const metrics = data.models_metrics[model_id];
+                    if (!metrics.epochs || metrics.epochs.length === 0) return;
+
+                    lossTraces.push({
+                        x: metrics.epochs,
+                        y: metrics.losses,
+                        name: `Model ${model_id} Loss`,
+                        line: { color: colors[`model${index}`].loss }
+                    });
+
+                    accuracyTraces.push({
+                        x: metrics.epochs,
+                        y: metrics.accuracies,
+                        name: `Model ${model_id} Accuracy`,
+                        line: { color: colors[`model${index}`].accuracy }
+                    });
+
+                    // Update prediction images if available
+                    if (data.prediction_images && data.prediction_images[model_id]) {
+                        $(`#prediction${parseInt(model_id) + 1}`).html(
+                            `<h3>Model ${model_id} Predictions</h3>
+                            <img src="data:image/png;base64,${data.prediction_images[model_id]}" style="width:100%">`
+                        );
+                    }
+                });
+
+                // Update both plots
+                if (lossTraces.length > 0) {
+                    Plotly.react('loss_chart', lossTraces, {
+                        title: 'Training Loss',
+                        xaxis: { title: 'Epoch' },
+                        yaxis: { title: 'Loss' },
+                        showlegend: true
+                    });
+                }
+
+                if (accuracyTraces.length > 0) {
+                    Plotly.react('accuracy_chart', accuracyTraces, {
+                        title: 'Training Accuracy',
+                        xaxis: { title: 'Epoch' },
+                        yaxis: { title: 'Accuracy', range: [0, 1] },
+                        showlegend: true
+                    });
+                }
+
+                if (data.status === "Training Complete") {
+                    clearInterval(intervalId);
+                    $('button').prop('disabled', false);
+                }
+            }).fail(function() {
+                clearInterval(intervalId);
+                $('#status').text('Status: Error fetching metrics');
+                $('button').prop('disabled', false);
+            });
+        }
     </script>
 </body>
 </html> 
